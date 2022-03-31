@@ -1,0 +1,3 @@
+#!/bin/bash
+
+g++ -std=c++11 test2.cpp -framework OpenGL -framework GLUT
