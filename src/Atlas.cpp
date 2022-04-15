@@ -86,9 +86,7 @@ void Atlas::run(const StringList& s)
     {
         load();
         m_grid->registration();
-/**
         write();
-**/
     }
     catch (const pdal::pdal_error& err)
     {

@@ -1,6 +1,6 @@
 FROM condaforge/miniforge3
 
-RUN conda install -y -c conda-forge gdal pdal compilers make cmake ninja sysroot_linux-64==2.17
+RUN conda install -y -c conda-forge gdal pdal compilers make cmake ninja eigen=3.3.9 sysroot_linux-64==2.17
 
 SHELL ["conda", "run", "-n", "base", "/bin/bash", "-c"]
 

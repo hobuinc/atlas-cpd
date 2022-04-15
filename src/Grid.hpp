@@ -68,7 +68,7 @@ struct GridCell
     int m_len;
     pdal::PointViewPtr m_before;
     pdal::PointViewPtr m_after;
-    Eigen::Vector3d m_vec;
+    Eigen::Vector4d m_vec;
 
     GridCell(int x, int y, int len, pdal::PointViewPtr inView) :
         m_x(x), m_y(y), m_len(len),
@@ -88,7 +88,7 @@ public:
     {}
 
     void insert(pdal::PointViewPtr in, AP::Order order);
-    Eigen::Vector3d *getVector(int x, int y);
+    Eigen::Vector4d *getVector(int x, int y);
     void registration();
     void calcLimits();
 

@@ -69,7 +69,7 @@ void Grid::registration()
 }
 
 
-Eigen::Vector3d *Grid::getVector(int x, int y)
+Eigen::Vector4d *Grid::getVector(int x, int y)
 {
     auto ci = m_cells.find(GridIndex(x, y));
     if (ci == m_cells.end())
@@ -142,7 +142,7 @@ std::cerr << "Done registration: " << std::ctime(&result) << "!\n";
     std::cerr << "Xform size = " << xform.rows() << "/" << xform.cols() <<
         "!\n";
     std::cerr << "Vec size = " << vec.rows() << "/" << vec.cols() << "!\n";
-    m_vec = xform * vec;
+    // m_vec = xform * vec;
     std::cerr << "Done multiplication!\n";
 }
 
@@ -218,7 +218,7 @@ const double& GridIter::operator*() const
 {
     static double empty(-9999);
 
-    Eigen::Vector3d *vec = m_grid.getVector(x(), y());
+    Eigen::Vector4d *vec = m_grid.getVector(x(), y());
     if (!vec)
         return empty;
     return (*vec)(m_dimOffset);
@@ -234,7 +234,7 @@ const double *GridIter::operator->() const
 {
     static double empty(-9999);
 
-    Eigen::Vector3d *vec = m_grid.getVector(x(), y());
+    Eigen::Vector4d *vec = m_grid.getVector(x(), y());
     if (!vec)
         return &empty;
     return &(*vec)(m_dimOffset);

@@ -5,7 +5,7 @@
 # 'make clean'  removes all .o and executable files
 #
 CC = g++
-CFLAGS = -Wall -g -O3 -std=c++11
+CFLAGS = -Wall -g -std=c++11
 INCLUDES = -I. -I${CONDA_PREFIX}/include -I${CONDA_PREFIX}/include/eigen3
 LFLAGS = -L/${CONDA_PREFIX}/lib
 LIBS = -lpdalcpp -lgdal -lcpd -lfgt
