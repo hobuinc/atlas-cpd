@@ -136,9 +136,6 @@ void Atlas::write()
     using namespace pdal;
 
     const std::string filename("vector.out");
-    const std::string driver("GTiff");
-    //ABELL - fix
-    SpatialReference srs;
 
     std::array<double, 6> pixelToPos;
     pixelToPos[0] = m_grid->xOrigin();
@@ -149,16 +146,16 @@ void Atlas::write()
     pixelToPos[5] = -m_len;
 
     gdal::registerDrivers();
-    gdal::Raster raster(filename, driver, srs, pixelToPos);
+    gdal::Raster raster(filename, "GTiff", "EPSG:32624", pixelToPos);
     gdal::GDALError err = raster.open(m_grid->xSize(), m_grid->ySize(),
         3, Dimension::Type::Float, -9999, pdal::StringList());
 
     if (err != gdal::GDALError::None)
         throwError(raster.errorMsg());
-    {
-        GridIter it(*m_grid, Dimension::Id::X);
-        raster.writeBand(it, -9999.0, 1, "X");
-    }
+
+    raster.writeBand(GridIter(*m_grid, Dimension::Id::X), -9999.0, 1, "X");
+    raster.writeBand(GridIter(*m_grid, Dimension::Id::Y), -9999.0, 2, "Y");
+    raster.writeBand(GridIter(*m_grid, Dimension::Id::Z), -9999.0, 3, "Z");
 }
 
 } // namespace

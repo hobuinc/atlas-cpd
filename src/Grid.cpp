@@ -30,7 +30,6 @@ void Grid::insert(pdal::PointViewPtr in, AP::Order order)
             cell.m_before : cell.m_after);
         out->appendPoint(*in, id);
     }
-    std::cerr << "Total cells = " << m_cells.size() << "!\n";
 }
 
 
@@ -69,7 +68,7 @@ void Grid::registration()
 }
 
 
-Eigen::Vector4d *Grid::getVector(int x, int y)
+Eigen::Vector3d *Grid::getVector(int x, int y)
 {
     auto ci = m_cells.find(GridIndex(x, y));
     if (ci == m_cells.end())
@@ -85,15 +84,12 @@ void GridCell::registration()
 {
     using namespace pdal::Dimension;
 
-    if (!m_before || !m_after ||
-        m_before->size() < 250 || m_after->size() < 250)
+    if (!m_before || !m_after || m_before->size() < 250 || m_after->size() < 250)
+    {
+        std::cerr << "Aborting for " << m_x << "/" << m_y << ".\n";
         return;
-
-std::time_t result = std::time(nullptr);
-std::cerr << "Start registration for " <<
-            m_x << "/" << m_y << " " << std::ctime(&result) << "!\n";
-std::cerr << "\tbefore/after size = " << m_before->size() << "/" <<
-    m_after->size() << "!\n";
+    }
+    std::cerr << "Computing for " << m_x << "/" << m_y << ".\n";
 
     // Convert points to Eigen Matrices.
     Eigen::MatrixX3d bm(m_before->size(), 3);
@@ -113,37 +109,23 @@ std::cerr << "\tbefore/after size = " << m_before->size() << "/" <<
     }
 
     // Find the average Z value to use for our velocity raster.
-//    auto lastcol = bm(Eigen::placeholders::all, Eigen::placeholders::last);
     auto lastcol = bm.col(bm.cols() - 1);
     double zMean = lastcol.mean();
 
-    // Transform matrix based on provided info.  Each row is a point
-    // to be transformed.  The transform matrix expects left multiplication
-    // with a set of column vectors, so we right multiply by the transpose
-    // to use row vectors.  homogeneous() adds a "1" as a 4th element.
-    // hnormalized() essentially undoes homogeneous().
-    /**
-    bm = (bm.rowwise().homogeneous() * transformTranspose).
-        rowwise().hnormalized();
-    am = (am.rowwise().homogeneous() * transformTranspose).
-        rowwise().hnormalized();
-    **/
+    auto result = cpd::rigid(bm, am);
 
-result = std::time(nullptr);
-std::cerr << "Running CPD: " << std::ctime(&result) << "!\n";
-std::cerr << "Before size = " << bm.rows() << "/" << bm.cols() << "!\n";
-std::cerr << "After size = " << am.rows() << "/" << am.cols() << "!\n";
-    auto xform = cpd::rigid(bm, am).matrix();
+    Eigen::Matrix4d xform = result.matrix();
+    Eigen::Matrix4d inv = xform.inverse();
 
-result = std::time(nullptr);
-std::cerr << "Done registration: " << std::ctime(&result) << "!\n";
-    // Find cell center and apply transform.
     Eigen::Vector4d vec((m_x + .5) * m_len, (m_y + .5) * m_len, zMean, 1);
-    std::cerr << "Xform size = " << xform.rows() << "/" << xform.cols() <<
-        "!\n";
-    std::cerr << "Vec size = " << vec.rows() << "/" << vec.cols() << "!\n";
-    // m_vec = xform * vec;
-    std::cerr << "Done multiplication!\n";
+
+    // CPD creates a transformation from the _after_ (moving) set to the
+    // _before_ (fixed) set. We want it the other way around, so we multiply
+    // the inverse of the transform on the left by the point we want transformed.
+    // We then subtract the original source vector to get actual movement.
+    // The result is a 4x1 vector, so we trim it to 3x1.
+    m_vec = ((inv * vec) - vec).head(3);
+    std::cerr << "Vec = (" << m_vec(0) << ", " << m_vec(1) << ", " << m_vec(2) << ")\n";
 }
 
 //
@@ -157,19 +139,18 @@ GridIter::GridIter(Grid& grid, pdal::Dimension::Id dim) :
 
     if (dim != Id::X && dim != Id::Y && dim != Id::Z &&
             dim != Id::Unknown)
-//ABELL    throwError("Dimension must be X, Y, Z or Unknown.")
         std::cerr << "Dimension must be X, Y, Z or Unknown.\n";
     m_dimOffset = static_cast<int>(dim) - 1;
 }
 
 int32_t GridIter::x() const
 {
-    return (m_pos % m_grid.ySize()) + m_grid.xOrigin();
+    return (m_pos % m_grid.xSize()) + m_grid.xOrigin();
 }
 
 int32_t GridIter::y() const
 {
-    return (m_pos / m_grid.ySize()) + m_grid.yOrigin();
+    return (m_pos / m_grid.xSize()) + m_grid.yOrigin();
 }
 
 GridIter& GridIter::operator++()
@@ -218,7 +199,7 @@ const double& GridIter::operator*() const
 {
     static double empty(-9999);
 
-    Eigen::Vector4d *vec = m_grid.getVector(x(), y());
+    Eigen::Vector3d *vec = m_grid.getVector(x(), y());
     if (!vec)
         return empty;
     return (*vec)(m_dimOffset);
@@ -234,7 +215,7 @@ const double *GridIter::operator->() const
 {
     static double empty(-9999);
 
-    Eigen::Vector4d *vec = m_grid.getVector(x(), y());
+    Eigen::Vector3d *vec = m_grid.getVector(x(), y());
     if (!vec)
         return &empty;
     return &(*vec)(m_dimOffset);
