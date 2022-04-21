@@ -103,22 +103,16 @@ void Atlas::load()
     ss << m_transform;
     transformOpts.add("matrix", ss.str());
 
-    Options reproOpts;
-    reproOpts.add("in_srs", "EPSG:7789");
-    reproOpts.add("out_srs", "EPSG:32624");
-
     StageCreationOptions bOps { m_beforeFilename };
     Stage& beforeReader = m_beforeMgr.makeReader(bOps);
     Stage& beforeFilter = m_beforeMgr.makeFilter("filters.transformation",
         beforeReader, transformOpts);
-    m_beforeMgr.makeFilter("filters.reprojection", beforeFilter, reproOpts);
     m_beforeMgr.execute(ExecMode::Standard);
 
     StageCreationOptions aOps { m_afterFilename };
     Stage& afterReader = m_afterMgr.makeReader(aOps);
     Stage& afterFilter = m_afterMgr.makeFilter("filters.transformation",
         afterReader, transformOpts);
-    m_afterMgr.makeFilter("filters.reprojection", afterFilter, reproOpts);
     m_afterMgr.execute(ExecMode::Standard);
 
     m_grid.reset(new Grid(m_len));
@@ -138,10 +132,10 @@ void Atlas::write()
     const std::string filename("vector.out");
 
     std::array<double, 6> pixelToPos;
-    pixelToPos[0] = m_grid->xOrigin();
+    pixelToPos[0] = (m_grid->xOrigin() * m_len);
     pixelToPos[1] = m_len;
     pixelToPos[2] = 0;
-    pixelToPos[3] = m_grid->yOrigin() + (m_len * m_grid->ySize());
+    pixelToPos[3] = (m_grid->yOrigin() * m_len) + (m_len * m_grid->ySize());
     pixelToPos[4] = 0;
     pixelToPos[5] = -m_len;
 
