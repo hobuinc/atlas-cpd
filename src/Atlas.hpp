@@ -31,6 +31,8 @@ private:
     pdal::ProgramArgs m_args;
     std::string m_beforeFilename;
     std::string m_afterFilename;
+    int m_minpts;
+    bool m_debug;
     std::unique_ptr<Grid> m_grid;
 
     StringList m_transformSpecs;

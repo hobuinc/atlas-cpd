@@ -70,11 +70,15 @@ struct GridCell
     pdal::PointViewPtr m_after;
     Eigen::Vector3d m_vec;
 
-    GridCell(int x, int y, int len, pdal::PointViewPtr inView) :
-        m_x(x), m_y(y), m_len(len),
-        m_before(inView->makeNew()), m_after(inView->makeNew())
-    {}
-    void registration();
+    GridCell(pdal::PointTableRef table, int x, int y, int len, pdal::PointViewPtr inView) :
+        m_x(x), m_y(y), m_len(len)
+    {
+        using namespace pdal;
+
+        m_before = std::make_shared<PointView>(table);
+        m_after = std::make_shared<PointView>(table);
+    }
+    void registration(int minpts, bool debug);
 };
 
 class Grid
@@ -85,11 +89,16 @@ public:
         m_ySize(std::numeric_limits<int>::lowest()),
         m_xOrigin(std::numeric_limits<int>::lowest()),
         m_yOrigin(std::numeric_limits<int>::lowest())
-    {}
+    {
+        using namespace pdal;
+
+        m_table.layout()->registerDims( {Dimension::Id::X, Dimension::Id::Y, Dimension::Id::Z} );
+        m_table.finalize();
+    }
 
     void insert(pdal::PointViewPtr in, AP::Order order);
     Eigen::Vector3d *getVector(int x, int y);
-    void registration();
+    void registration(int minpts, bool debug);
     void calcLimits();
 
     size_t xSize()
@@ -108,6 +117,7 @@ private:
     int m_xOrigin;
     int m_yOrigin;
     std::unordered_map<GridIndex, GridCell> m_cells;
+    pdal::PointTable m_table;
 };
 
 class GridIter

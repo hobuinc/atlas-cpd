@@ -29,6 +29,9 @@ void Atlas::addArgs()
         m_afterFilename).setPositional();
     m_args.add("transform", "List of matrix entries - multiplied as"
         "written: A B C = A * B * C", m_transformSpecs).setOptionalPositional();
+    m_args.add("minpts", "Minimum number of points in a cell to permit processing",
+        m_minpts, 250);
+    m_args.add("debug", "Dump transform and points", m_debug);
 }
 
 void Atlas::parse(const StringList& slist)
@@ -48,8 +51,6 @@ void Atlas::parse(const StringList& slist)
         std::string fileInput = pdal::FileUtils::readFileIntoString(s);
         if (fileInput.size())
         {
-            std::cerr << "Applying " << s << "!\n";
-            std::cerr << "Input = " << fileInput << "!\n";
             s = fileInput;
         }
         StringList l = pdal::Utils::split2(s,
@@ -74,7 +75,6 @@ void Atlas::parse(const StringList& slist)
             }
         }
         m_transform *= m;
-        std::cerr << "Transform = " << m_transform << "!\n";
     }
 }
 
@@ -85,7 +85,7 @@ void Atlas::run(const StringList& s)
     try
     {
         load();
-        m_grid->registration();
+        m_grid->registration(m_minpts, m_debug);
         write();
     }
     catch (const pdal::pdal_error& err)
@@ -105,19 +105,24 @@ void Atlas::load()
 
     StageCreationOptions bOps { m_beforeFilename };
     Stage& beforeReader = m_beforeMgr.makeReader(bOps);
+    /**
     Stage& beforeFilter = m_beforeMgr.makeFilter("filters.transformation",
         beforeReader, transformOpts);
+    **/
     m_beforeMgr.execute(ExecMode::Standard);
 
     StageCreationOptions aOps { m_afterFilename };
     Stage& afterReader = m_afterMgr.makeReader(aOps);
+    /**
     Stage& afterFilter = m_afterMgr.makeFilter("filters.transformation",
         afterReader, transformOpts);
+    **/
     m_afterMgr.execute(ExecMode::Standard);
 
     m_grid.reset(new Grid(m_len));
     PointViewPtr bp = *(m_beforeMgr.views().begin());
     m_grid->insert(bp, AP::Order::Before);
+
     PointViewPtr ap = *(m_afterMgr.views().begin());
     m_grid->insert(ap, AP::Order::After);
 
