@@ -140,9 +140,9 @@ void Atlas::write()
     pixelToPos[0] = (m_grid->xOrigin() * m_len);
     pixelToPos[1] = m_len;
     pixelToPos[2] = 0;
-    pixelToPos[3] = (m_grid->yOrigin() * m_len) + (m_len * m_grid->ySize());
+    pixelToPos[3] = (m_grid->yOrigin() * m_len);
     pixelToPos[4] = 0;
-    pixelToPos[5] = -m_len;
+    pixelToPos[5] = m_len;
 
     gdal::registerDrivers();
     gdal::Raster raster(filename, "GTiff", "EPSG:32624", pixelToPos);
