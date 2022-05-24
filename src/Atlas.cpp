@@ -88,7 +88,7 @@ void Atlas::run(const StringList& s)
         m_grid->registration(m_minpts, m_debug);
         std::string filename = "/data/" + pdal::FileUtils::stem(m_beforeFilename) + ".out";
 
-        write();
+        write(filename);
     }
     catch (const pdal::pdal_error& err)
     {
