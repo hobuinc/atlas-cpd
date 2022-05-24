@@ -90,10 +90,10 @@ void GridCell::registration(int minpts, bool debug)
 
     if (!m_before || !m_after || m_before->size() < minpts || m_after->size() < minpts)
     {
-        std::cerr << "Aborting for " << m_x << "/" << m_y << ".\n";
+//         std::cerr << "Aborting for " << m_x << "/" << m_y << ".\n";
         return;
     }
-    std::cerr << "Computing for " << m_x << "/" << m_y << ".\n";
+//     std::cerr << "Computing for " << m_x << "/" << m_y << ".\n";
 
     // Convert points to Eigen Matrices.
     Eigen::MatrixX3d bm(m_before->size(), 3);
