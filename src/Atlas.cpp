@@ -132,11 +132,10 @@ void Atlas::load()
 }
 
 
-void Atlas::write()
+void Atlas::write(const std::string& filename)
 {
     using namespace pdal;
 
-    const std::string filename("vector.out");
 
     std::array<double, 6> pixelToPos;
     pixelToPos[0] = (m_grid->xOrigin() * m_len);
