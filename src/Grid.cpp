@@ -139,8 +139,8 @@ void GridCell::registration(int minpts, bool debug)
     }
     else
     {
-        std::cerr << "Vec = (" << vec(0) << ", " << vec(1) << ", " << vec(2) << ") -> (" <<
-                m_vec(0) << ", " << m_vec(1) << ", " << m_vec(2) << ")\n";
+//         std::cerr << "Vec = (" << vec(0) << ", " << vec(1) << ", " << vec(2) << ") -> (" <<
+//                 m_vec(0) << ", " << m_vec(1) << ", " << m_vec(2) << ")\n";
     }
 }
 
