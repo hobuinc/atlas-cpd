@@ -26,8 +26,8 @@ private:
     void load();
     void parse(const StringList& s);
     void throwError(const std::string& s);
-    void write();
-
+    void write(const std::string& filename);
+    
     pdal::ProgramArgs m_args;
     std::string m_beforeFilename;
     std::string m_afterFilename;
