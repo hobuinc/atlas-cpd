@@ -86,7 +86,7 @@ void Atlas::run(const StringList& s)
     {
         load();
         m_grid->registration(m_minpts, m_debug);
-        std::string filename = "/data/" + pdal::FileUtils::stem(m_beforeFilename) + "_cpd.out";
+        std::string filename = "/cpd_surface/" + pdal::FileUtils::stem(m_beforeFilename) + "_cpd.out";
 
         write(filename);
     }
